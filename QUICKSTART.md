@@ -1,12 +1,13 @@
 # GraphRAG Quick Start Guide
 
-Get up and running with GraphRAG in minutes!
+Get up and running with GraphRAG for Obsidian vault indexing in minutes!
 
 ## Prerequisites
 
 - Python 3.12 or higher
 - [UV](https://docs.astral.sh/uv/) for fast Python package management
 - Docker (optional, for Neo4j)
+- An Obsidian vault to index
 
 ## Step 1: Install GraphRAG
 
@@ -28,10 +29,10 @@ uv pip install -e .
 
 ```bash
 # Start Neo4j using Docker Compose
-docker-compose up -d
+docker compose up -d
 
 # Wait for Neo4j to be ready (check logs)
-docker-compose logs -f neo4j
+docker compose logs -f neo4j
 ```
 
 ### Option B: Using Neo4j Desktop
@@ -54,73 +55,88 @@ docker-compose logs -f neo4j
 uv run python test_installation.py
 ```
 
-## Step 4: Index Your First Directory
+## Step 4: Index Your Obsidian Vault
 
 ```bash
-# Index the current directory
+# Index your Obsidian vault
+uv run graphrag index /path/to/your/obsidian/vault
+
+# Or index the current directory if it's your vault
 uv run graphrag index .
 
-# Or index a specific directory
-uv run graphrag index /path/to/your/codebase
+# Clear existing data and re-index
+uv run graphrag index /path/to/your/obsidian/vault --clear
 ```
 
-## Step 5: Start Querying
+## Step 5: Start Querying Your Vault
 
 ```bash
-# Search for files containing specific text
-uv run graphrag search --query "def main"
+# Search for notes containing specific text
+uv run graphrag search --query "project ideas"
 
-# Find all Python files
-uv run graphrag search --extension py
+# Find notes with specific tags
+uv run graphrag search --tag "#project"
 
-# Get codebase statistics
+# Find notes in a specific folder
+uv run graphrag search --folder "Projects/"
+
+# Get vault statistics
 uv run graphrag stats
 
-# Find largest files
-uv run graphrag largest
+# Find most linked notes
+uv run graphrag most-linked
 
-# Get info about a specific file
-uv run graphrag info /path/to/your/file.py
+# Get info about a specific note
+uv run graphrag info "Projects/my-note.md"
 ```
 
 ## Step 6: Advanced Queries
 
 ```bash
-# Find files that import pandas
-uv run graphrag query --query "MATCH (f:File)-[:IMPORTS]->(m:ImportedModule {name: 'pandas'}) RETURN f.path, f.name"
+# Find notes that link to a specific note
+uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO]->(l:InternalLink {name: 'project-ideas'}) RETURN n.title, n.path"
 
-# Find files with most functions
-uv run graphrag query --query "MATCH (f:File)-[:DEFINES]->(func:Function) RETURN f.name, count(func) as function_count ORDER BY function_count DESC LIMIT 10"
+# Find notes with most tags
+uv run graphrag query --query "MATCH (n:Note)-[:HAS_TAG]->(t:Tag) RETURN n.title, count(t) as tag_count ORDER BY tag_count DESC LIMIT 10"
 
-# Find recently modified files
-uv run graphrag query --query "MATCH (f:File) WHERE f.modified > timestamp() - 86400000 RETURN f.name, f.modified ORDER BY f.modified DESC LIMIT 10"
+# Find recently modified notes
+uv run graphrag query --query "MATCH (n:Note) WHERE n.modified > timestamp() - 86400000 RETURN n.title, n.modified ORDER BY n.modified DESC LIMIT 10"
+
+# Find notes with external links
+uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO_EXTERNAL]->(e:ExternalLink) RETURN n.title, e.url LIMIT 20"
 ```
 
 ## Example Workflow
 
-Here's a complete example workflow:
+Here's a complete example workflow for indexing and querying an Obsidian vault:
 
 ```bash
 # 1. Start Neo4j
-docker-compose up -d
+docker compose up -d
 
 # 2. Wait for Neo4j to be ready
 sleep 30
 
-# 3. Index a Python project
-uv run graphrag index ./my-python-project
+# 3. Index your Obsidian vault
+uv run graphrag index ~/Documents/Obsidian/MyVault
 
-# 4. Search for main functions
-uv run graphrag search --query "def main"
+# 4. Search for notes about projects
+uv run graphrag search --query "project"
 
-# 5. Find all imports
-uv run graphrag query --query "MATCH (f:File)-[:IMPORTS]->(m:ImportedModule) RETURN f.name, m.name LIMIT 20"
+# 5. Find all notes with the #ideas tag
+uv run graphrag search --tag "#ideas"
 
-# 6. Get project statistics
+# 6. Get vault statistics
 uv run graphrag stats
 
-# 7. Find largest files
-uv run graphrag largest --limit 10
+# 7. Find most linked notes
+uv run graphrag most-linked --limit 10
+
+# 8. Get detailed info about a specific note
+uv run graphrag info "Projects/2024-goals.md"
+
+# 9. Find notes that link to a specific concept
+uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO]->(l:InternalLink {name: 'graphrag'}) RETURN n.title, n.path"
 ```
 
 ## Development Workflow
@@ -151,10 +167,10 @@ If you can't connect to Neo4j:
 
 ```bash
 # Check if Neo4j is running
-docker-compose ps
+docker compose ps
 
 # Check Neo4j logs
-docker-compose logs neo4j
+docker compose logs neo4j
 
 # Test connection manually
 curl http://localhost:7474
@@ -197,12 +213,28 @@ pip install uv
 uv --version
 ```
 
+### Obsidian Vault Issues
+
+If you have issues with your Obsidian vault:
+
+```bash
+# Make sure the vault path is correct
+ls -la /path/to/your/obsidian/vault
+
+# Check if the vault contains .md files
+find /path/to/your/obsidian/vault -name "*.md" | head -10
+
+# Verify vault structure
+tree /path/to/your/obsidian/vault -L 2
+```
+
 ## Next Steps
 
 - Read the full [README.md](README.md) for detailed documentation
 - Check out [examples/basic_usage.py](examples/basic_usage.py) for programmatic usage
 - Explore the CLI help: `uv run graphrag --help`
 - Try different query types: `uv run graphrag search --help`
+- Learn about Cypher queries for advanced vault analysis
 
 ## Support
 
@@ -210,7 +242,8 @@ If you encounter issues:
 
 1. Check the troubleshooting section above
 2. Run `uv run python test_installation.py` to verify your setup
-3. Check the Neo4j logs: `docker-compose logs neo4j`
-4. Open an issue on GitHub with details about your environment
+3. Check the Neo4j logs: `docker compose logs neo4j`
+4. Verify your Obsidian vault structure and permissions
+5. Open an issue on GitHub with details about your environment
 
-Happy indexing! 🚀 
+Happy vault indexing! 🚀 
