@@ -1,0 +1,35 @@
+[project]
+name = "graphrag"
+version = "0.1.0"
+description = "A knowledge graph system using Neo4j for indexing and querying Obsidian note collections"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "neo4j>=5.0.0",
+    "click>=8.0.0",
+    "python-magic>=0.4.27",
+    "chardet>=5.0.0",
+    "pathlib2>=2.3.7",
+    "rich>=13.0.0",
+    "tqdm>=4.65.0",
+    "pyyaml>=6.0.0",
+    "markdown>=3.4.0",
+    "python-frontmatter>=1.0.0",
+]
+
+[project.scripts]
+graphrag = "graphrag.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
