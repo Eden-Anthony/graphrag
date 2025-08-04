@@ -137,6 +137,67 @@ uv run graphrag info "Projects/2024-goals.md"
 
 # 9. Find notes that link to a specific concept
 uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO]->(l:InternalLink {name: 'graphrag'}) RETURN n.title, n.path"
+
+# 10. Visualize your knowledge graph
+uv run graphrag visualize --format cypher
+```
+
+## Step 7: Visualize Your Knowledge Graph
+
+GraphRAG provides several ways to visualize your Obsidian vault knowledge graph:
+
+### Option 1: Neo4j Browser (Recommended)
+
+```bash
+# Export Cypher queries for Neo4j Browser
+uv run graphrag visualize --format cypher --output my_vault_visualization.cypher
+
+# Then open Neo4j Browser at http://localhost:7474
+# Username: neo4j
+# Password: password
+# Copy and paste the queries from the exported file
+```
+
+### Option 2: Export for External Tools
+
+```bash
+# Export as JSON for D3.js, Gephi, or other tools
+uv run graphrag visualize --format json --output my_vault_data.json
+
+# Export as CSV for spreadsheet analysis
+uv run graphrag visualize --format csv --output my_vault_data.csv
+
+# Export with custom query
+uv run graphrag visualize --format cypher --query "MATCH (n:Note)-[:HAS_TAG]->(t:Tag) RETURN n, t"
+```
+
+### Option 3: Direct Neo4j Browser Access
+
+1. Make sure Neo4j is running: `docker compose up -d`
+2. Open your browser and go to: `http://localhost:7474`
+3. Login with username `neo4j` and password `password`
+4. Run these example queries:
+
+```cypher
+// View all notes and their relationships
+MATCH (n:Note)
+OPTIONAL MATCH (n)-[r]->(m)
+RETURN n, r, m
+LIMIT 50
+
+// Visualize note hierarchy
+MATCH (f:Folder)-[:CONTAINS]->(n:Note)
+RETURN f, n
+
+// Show notes with their tags
+MATCH (n:Note)-[:HAS_TAG]->(t:Tag)
+RETURN n, t
+
+// Visualize internal links between notes
+MATCH (n1:Note)-[:LINKS_TO]->(l:InternalLink)<-[:LINKS_TO]-(n2:Note)
+WHERE n1 <> n2
+RETURN n1, l, n2
+LIMIT 20
 ```
 
 ## Development Workflow
