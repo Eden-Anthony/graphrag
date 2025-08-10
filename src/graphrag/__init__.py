@@ -1,11 +1,18 @@
-"""
-GraphRAG - A knowledge graph system using Neo4j for indexing and querying Obsidian note collections.
-"""
+"""Neo4j GraphRAG implementation for Obsidian vaults."""
 
 __version__ = "0.1.0"
 
-from .core import KnowledgeGraph
-from .indexer import ObsidianIndexer
-from .query import ObsidianQueryEngine
+from .core import ObsidianGraphRAG
+from .models import Entity, Note, Relationship
+from .services import EntityDetectionService, KnowledgeGraphService, QueryService
 
-__all__ = ["KnowledgeGraph", "ObsidianIndexer", "ObsidianQueryEngine"]
+__all__ = [
+    "ObsidianGraphRAG",
+    "Entity",
+    "Note",
+    "Relationship",
+    "EntityDetectionService",
+    "KnowledgeGraphService",
+    "QueryService",
+]
+

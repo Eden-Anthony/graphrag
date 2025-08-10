@@ -1,421 +1,229 @@
-# GraphRAG
+# GraphRAG: Obsidian Knowledge Graph with Neo4j
 
-A powerful knowledge graph system using Neo4j for indexing and querying Obsidian vaults. GraphRAG allows you to create a comprehensive knowledge graph of your Obsidian notes and perform sophisticated queries to understand relationships, connections, and knowledge structure.
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+GraphRAG is a powerful Python application that transforms your Obsidian vault into an intelligent knowledge graph using Neo4j's GraphRAG technology. It automatically detects entities, relationships, and concepts from your notes, enabling advanced semantic search, AI-powered querying, and knowledge discovery.
 
-- **Obsidian Vault Indexing**: Automatically scan and index Obsidian vaults into Neo4j
-- **Smart Note Processing**: Processes markdown files with frontmatter, tags, and links
-- **Relationship Extraction**: Automatically identifies internal links, tags, headers, and external links
-- **Rich Querying**: Search by content, tags, folders, modification date, and more
-- **Note Analysis**: Extract tags, internal links, external links, and headers
-- **Link Analysis**: Find most linked notes and connection patterns
-- **Statistics**: Comprehensive vault analytics and insights
-- **Custom Queries**: Execute arbitrary Cypher queries
-- **Beautiful CLI**: Rich terminal interface with tables and progress indicators
-- **Visualization**: Export data for Neo4j Browser and external visualization tools
+## 🚀 Features
 
-## Installation
+- **Automatic Entity Detection**: Uses OpenAI's GPT models to identify entities, concepts, and relationships in your notes
+- **Neo4j Integration**: Leverages Neo4j's GraphRAG for powerful graph-based knowledge representation
+- **Real-time File Watching**: Automatically updates the knowledge graph when you modify notes
+- **Hybrid Search**: Combines vector similarity and full-text search for optimal results
+- **AI-Powered Queries**: Ask questions in natural language and get intelligent answers with citations
+- **Comprehensive Entity Types**: Supports 100+ entity categories from philosophy to technology
+- **Rich Metadata Extraction**: Parses frontmatter, tags, links, and note relationships
 
-### Prerequisites
-
-1. **Neo4j Database**: You need a running Neo4j instance
-   - [Neo4j Desktop](https://neo4j.com/download/) (recommended for development)
-   - [Neo4j Community Edition](https://neo4j.com/download-center/#community)
-   - [Neo4j Docker](https://neo4j.com/developer/docker/)
-
-2. **Python 3.12+**: The system requires Python 3.12 or higher
-
-3. **UV**: Install [UV](https://docs.astral.sh/uv/) for fast Python package management
-
-4. **Obsidian Vault**: An Obsidian vault to index
-
-### Install GraphRAG
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd graphrag
-
-# Install dependencies using UV
-uv sync
-
-# Or install in development mode
-uv pip install -e .
-```
-
-## Quick Start
-
-### 1. Start Neo4j
-
-Make sure your Neo4j database is running. The default connection settings are:
-- URI: `bolt://localhost:7687`
-- Username: `neo4j`
-- Password: `password`
-
-### 2. Index Your Obsidian Vault
-
-```bash
-# Index your Obsidian vault (default settings)
-uv run graphrag index /path/to/your/obsidian/vault
-
-# Index with custom Neo4j settings
-uv run graphrag --uri bolt://localhost:7687 --username neo4j --password your_password index /path/to/your/obsidian/vault
-
-# Clear existing data before indexing
-uv run graphrag index /path/to/your/obsidian/vault --clear
-
-# Index without recursion
-uv run graphrag index /path/to/your/obsidian/vault --no-recursive
-```
-
-### 3. Search and Query Your Vault
-
-```bash
-# Search for notes containing specific text
-uv run graphrag search --query "project ideas"
-
-# Find notes with specific tags
-uv run graphrag search --tag "#project"
-
-# Find notes in a specific folder
-uv run graphrag search --folder "Projects/"
-
-# Get vault statistics
-uv run graphrag stats
-
-# Find most linked notes
-uv run graphrag most-linked
-
-# Get detailed info about a specific note
-uv run graphrag info "Projects/my-note.md"
-
-# Execute custom Cypher query
-uv run graphrag query --query "MATCH (n:Note)-[:HAS_TAG]->(t:Tag) RETURN n.title, t.name LIMIT 10"
-```
-
-## Usage Examples
-
-### Indexing Different Types of Vaults
-
-```bash
-# Index a personal knowledge vault
-uv run graphrag index ~/Documents/Obsidian/PersonalVault
-
-# Index a research vault
-uv run graphrag index ~/Documents/Obsidian/ResearchVault
-
-# Index a project vault
-uv run graphrag index ~/Documents/Obsidian/ProjectVault
-```
-
-### Advanced Search Queries
-
-```bash
-# Find all notes containing "project" in content
-uv run graphrag search --query "project"
-
-# Find recently modified notes
-uv run graphrag query --query "MATCH (n:Note) WHERE n.modified > timestamp() - 86400000 RETURN n.title, n.modified ORDER BY n.modified DESC LIMIT 10"
-
-# Find notes that link to a specific note
-uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO]->(l:InternalLink {name: 'project-ideas'}) RETURN n.title, n.path"
-```
-
-### Note Analysis
-
-```bash
-# Find all tags in a specific note
-uv run graphrag query --query "MATCH (n:Note {path: '/path/to/note.md'})-[:HAS_TAG]->(t:Tag) RETURN t.name"
-
-# Find notes with the most tags
-uv run graphrag query --query "MATCH (n:Note)-[:HAS_TAG]->(t:Tag) RETURN n.title, count(t) as tag_count ORDER BY tag_count DESC LIMIT 10"
-
-# Find notes with external links
-uv run graphrag query --query "MATCH (n:Note)-[:LINKS_TO_EXTERNAL]->(e:ExternalLink) RETURN n.title, e.url LIMIT 20"
-```
-
-## Data Model
-
-GraphRAG creates a rich knowledge graph with the following node types and relationships:
-
-### Node Types
-
-- **Note**: Represents individual Obsidian notes with properties like path, title, content, size, etc.
-- **Folder**: Represents directories in the vault structure
-- **Tag**: Represents tags used in notes
-- **InternalLink**: Represents internal links between notes
-- **ExternalLink**: Represents external links from notes
-- **Header**: Represents headers within notes
-
-### Relationships
-
-- **CONTAINS**: Folder contains notes or subfolders
-- **HAS_TAG**: Note has a specific tag
-- **LINKS_TO**: Note links to an internal link
-- **LINKS_TO_EXTERNAL**: Note links to an external URL
-- **HAS_HEADER**: Note contains a specific header
-
-### Example Graph Structure
+## 🏗️ Architecture
 
 ```
-(Folder: /Projects) -[:CONTAINS]-> (Note: project-ideas.md)
-(Note: project-ideas.md) -[:HAS_TAG]-> (Tag: #ideas)
-(Note: project-ideas.md) -[:LINKS_TO]-> (InternalLink: implementation)
-(Note: project-ideas.md) -[:LINKS_TO_EXTERNAL]-> (ExternalLink: https://example.com)
-(Note: project-ideas.md) -[:HAS_HEADER]-> (Header: Implementation Plan)
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Obsidian      │    │   GraphRAG       │    │     Neo4j       │
+│     Vault       │───▶│   Services       │───▶│   Database      │
+│                 │    │                  │    │                 │
+│ • Markdown      │    │ • Entity         │    │ • Knowledge     │
+│ • Frontmatter   │    │   Detection      │    │   Graph         │
+│ • Links         │    │ • Knowledge      │    │ • Vector        │
+│ • Tags          │    │   Graph          │    │   Indexes       │
+└─────────────────┘    │ • Query          │    │ • Full-text     │
+                       │ • File Watching  │    │   Search        │
+                       └──────────────────┘    └─────────────────┘
 ```
 
-## CLI Commands
+## 📋 Prerequisites
 
-### `graphrag index <vault_path>`
+- Python 3.12 or higher
+- Neo4j database (local or AuraDB cloud)
+- OpenAI API key
+- Obsidian vault
 
-Index an Obsidian vault into the knowledge graph.
+## 🛠️ Installation
 
-**Options:**
-- `--clear`: Clear existing data before indexing
-- `--recursive/--no-recursive`: Index subdirectories recursively (default: true)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/graphrag.git
+   cd graphrag
+   ```
 
-### `graphrag search`
+2. **Install dependencies using uv (recommended):**
+   ```bash
+   uv sync
+   ```
 
-Search the Obsidian knowledge graph.
+   Or using pip:
+   ```bash
+   pip install -e .
+   ```
 
-**Options:**
-- `--query, -q`: Search query for note content
-- `--tag, -t`: Filter by tag
-- `--folder, -f`: Filter by folder path
-- `--limit, -l`: Maximum number of results (default: 10)
+3. **Set up environment variables:**
+   Create a `.env` file in the project root:
+   ```bash
+   # Neo4j Configuration
+   NEO4J_URI=neo4j://localhost:7687
+   NEO4J_USER=neo4j
+   NEO4J_PASSWORD=your_password
+   NEO4J_DATABASE=neo4j
+   
+   # OpenAI Configuration
+   OPENAI_API_KEY=your_openai_api_key
+   OPENAI_MODEL_ENTITY_DETECTION=gpt-4o-mini
+   OPENAI_MODEL_QUERY=gpt-4o
+   
+   # Obsidian Configuration
+   OBSIDIAN_VAULT_PATH=/path/to/your/obsidian/vault
+   
+   # Optional: AuraDB Configuration
+   AURA_URI=neo4j+s://your-instance.neo4j.io
+   AURA_USER=neo4j
+   AURA_PASSWORD=your_aura_password
+   AURA_DATABASE=neo4j
+   ```
 
-### `graphrag stats`
+## 🚀 Quick Start
 
-Show comprehensive vault statistics.
-
-**Options:**
-- `--limit, -l`: Maximum number of results for tag stats (default: 10)
-
-### `graphrag most-linked`
-
-Find the most linked notes in the vault.
-
-**Options:**
-- `--limit, -l`: Maximum number of results (default: 10)
-
-### `graphrag info <note_path>`
-
-Get detailed information about a specific note.
-
-### `graphrag query --query <cypher_query>`
-
-Execute a custom Cypher query.
-
-### `graphrag visualize`
-
-Export knowledge graph for visualization.
-
-**Options:**
-- `--format, -f`: Export format (cypher, json, csv, graphml)
-- `--output, -o`: Output file path
-- `--query, -q`: Custom query to visualize
-
-## Configuration
-
-### Neo4j Connection Settings
-
-You can configure Neo4j connection settings using command-line options:
-
-```bash
-uv run graphrag --uri bolt://your-neo4j-host:7687 --username your_username --password your_password <command>
-```
-
-### Environment Variables
-
-You can also set environment variables:
-
-```bash
-export NEO4J_URI=bolt://localhost:7687
-export NEO4J_USERNAME=neo4j
-export NEO4J_PASSWORD=your_password
-```
-
-## Note Processing
-
-### Supported File Types
-
-GraphRAG automatically processes Obsidian notes:
-
-- **Markdown files**: `.md`, `.markdown`
-- **Text files**: `.txt` (if present in vault)
-
-### Skipped Directories
-
-The following directories are automatically skipped:
-- Obsidian system: `.obsidian`, `.trash`
-- Version control: `.git`, `.svn`, `.hg`
-- Build artifacts: `build`, `dist`, `target`, `bin`, `obj`
-- Dependencies: `node_modules`, `.venv`, `venv`, `env`
-- IDE files: `.idea`, `.vscode`
-- Cache directories: `__pycache__`, `.pytest_cache`, `.mypy_cache`, `.tox`
-
-### Processing Features
-
-- **Frontmatter**: Extracts YAML frontmatter from notes
-- **Tags**: Identifies tags in content and frontmatter
-- **Internal Links**: Extracts `[[wiki-links]]` and `[display text](internal-link)` format
-- **External Links**: Extracts `[text](url)` format
-- **Headers**: Identifies markdown headers (`#`, `##`, etc.)
-- **Content Analysis**: Processes note content for search indexing
-
-## Development
-
-### Using UV for Development
-
-```bash
-# Install dependencies
-uv sync
-
-# Install in development mode
-uv pip install -e .
-
-# Run tests
-uv run pytest
-
-# Format code
-uv run black src/
-uv run isort src/
-
-# Type checking
-uv run mypy src/
-```
-
-## Advanced Usage
-
-### Programmatic Usage
-
-You can also use GraphRAG programmatically:
+### Basic Usage
 
 ```python
-from graphrag import KnowledgeGraph, ObsidianIndexer, ObsidianQueryEngine
+from graphrag import ObsidianGraphRAG
 
-# Initialize the knowledge graph
-kg = KnowledgeGraph(uri="bolt://localhost:7687", username="neo4j", password="password")
-kg.connect()
+# Initialize the system
+graphrag = ObsidianGraphRAG()
 
-# Index an Obsidian vault
-indexer = ObsidianIndexer(kg)
-stats = indexer.index_vault("/path/to/your/obsidian/vault")
+# Build the initial knowledge graph
+graphrag.build_initial_knowledge_graph()
 
-# Query the knowledge graph
-query_engine = ObsidianQueryEngine(kg)
-results = query_engine.search_notes_by_content("project ideas")
-print(results)
+# Query your knowledge
+result = graphrag.query("What are the main concepts in my notes about philosophy?")
+print(result.answer)
 
-kg.disconnect()
+# Start file watching for real-time updates
+graphrag.start_file_watcher()
+
+# Interactive chat mode
+graphrag.chat_mode()
 ```
 
-### Custom Queries
+### Advanced Usage
 
-GraphRAG supports arbitrary Cypher queries for advanced analysis:
+```python
+# Get similar entities
+similar = graphrag.get_similar_entities("machine learning", limit=5)
+
+# Get topic summaries
+summary = graphrag.get_topic_summary("artificial intelligence", limit=10)
+
+# View graph statistics
+graphrag._show_graph_stats()
+```
+
+## 🔧 Configuration
+
+The system is highly configurable through environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CONTEXT_WINDOW_SIZE` | 20 | Number of notes to include in query context |
+| `MAX_NOTE_SIZE` | 100000 | Maximum note size in bytes |
+| `ENTITY_DETECTION_BATCH_SIZE` | 5 | Batch size for entity detection |
+| `VECTOR_INDEX_NAME` | noteContentEmbedding | Neo4j vector index name |
+| `FULLTEXT_INDEX_NAME` | noteFulltext | Neo4j full-text index name |
+
+## 📊 Entity Types
+
+GraphRAG supports a comprehensive taxonomy of 100+ entity types including:
+
+- **Knowledge Systems** (00-09): Personal knowledge management, philosophy
+- **Philosophy** (10-19): Metaphysics, epistemology, logic, ethics
+- **Religion & Theology** (20-29): Major world religions, esotericism
+- **Social Sciences** (30-39): Sociology, politics, economics, anthropology
+- **Natural Sciences** (50-59): Mathematics, physics, biology, chemistry
+- **Technology** (60-69): Computer science, engineering, medicine
+- **Arts & Humanities** (70-89): Art, literature, music, language
+- **History & Geography** (90-98): World history, civilizations, current affairs
+
+## 🧪 Testing
+
+Run the test suite:
 
 ```bash
-# Find notes that link to each other
-uv run graphrag query --query "
-MATCH (n1:Note)-[:LINKS_TO]->(l:InternalLink)<-[:LINKS_TO]-(n2:Note)
-WHERE n1 <> n2
-RETURN n1.title, l.name, n2.title
-LIMIT 20
-"
+# Run all tests
+pytest
 
-# Find notes with most tags
-uv run graphrag query --query "
-MATCH (n:Note)-[:HAS_TAG]->(t:Tag)
-RETURN n.title, count(t) as tag_count
-ORDER BY tag_count DESC
-LIMIT 10
-"
+# Run with coverage
+pytest --cov=src/graphrag
 
-# Find orphaned internal links (links that don't exist)
-uv run graphrag query --query "
-MATCH (l:InternalLink)
-WHERE NOT EXISTS((n:Note {title: l.name}))
-RETURN l.name as orphaned_link
-"
+# Run specific test file
+pytest tests/test_core.py
 ```
 
-## Visualization
+## 📁 Project Structure
 
-### Neo4j Browser (Recommended)
+```
+graphrag/
+├── src/graphrag/
+│   ├── __init__.py          # Main package exports
+│   ├── core.py              # Main ObsidianGraphRAG class
+│   ├── config.py            # Configuration management
+│   ├── models.py            # Data models (Note, Entity, etc.)
+│   └── services/
+│       ├── entity_detection.py    # Entity detection service
+│       ├── knowledge_graph.py     # Neo4j knowledge graph service
+│       ├── query.py               # Query processing service
+│       └── file_watcher.py        # File system monitoring
+├── tests/                   # Test suite
+├── entity_types.txt         # Entity type definitions
+├── pyproject.toml          # Project configuration
+└── README.md               # This file
+```
 
-The easiest way to visualize your knowledge graph:
+## 🔍 How It Works
+
+1. **Note Processing**: Scans your Obsidian vault for markdown files
+2. **Entity Detection**: Uses OpenAI to identify entities, concepts, and relationships
+3. **Graph Construction**: Builds a Neo4j knowledge graph with nodes and relationships
+4. **Vector Embeddings**: Creates semantic embeddings for similarity search
+5. **Query Processing**: Combines vector search and full-text search for optimal results
+6. **Real-time Updates**: Monitors file changes and updates the graph automatically
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Setup
 
 ```bash
-# Start Neo4j
-docker compose up -d
+# Install development dependencies
+uv sync --group dev
 
-# Open Neo4j Browser at http://localhost:7474
-# Username: neo4j
-# Password: password
+# Format code
+black src/ tests/
 
-# Run visualization queries:
-MATCH (n:Note) OPTIONAL MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50
-MATCH (f:Folder)-[:CONTAINS]->(n:Note) RETURN f, n
-MATCH (n:Note)-[:HAS_TAG]->(t:Tag) RETURN n, t
+# Sort imports
+isort src/ tests/
+
+# Type checking
+mypy src/
 ```
 
-### Export for External Tools
+## 📄 License
 
-```bash
-# Export Cypher queries for Neo4j Browser
-uv run graphrag visualize --format cypher --output vault_visualization.cypher
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-# Export as JSON for D3.js, Gephi, etc.
-uv run graphrag visualize --format json --output vault_data.json
+## 🙏 Acknowledgments
 
-# Export as CSV for spreadsheet analysis
-uv run graphrag visualize --format csv --output vault_data.csv
-```
+- [Neo4j GraphRAG](https://github.com/neo4j/graphrag) for the underlying graph RAG technology
+- [OpenAI](https://openai.com/) for AI-powered entity detection and query processing
+- [Obsidian](https://obsidian.md/) for the excellent note-taking platform
 
-## Troubleshooting
+## 📞 Support
 
-### Connection Issues
+If you encounter any issues or have questions:
 
-If you can't connect to Neo4j:
+1. Check the [Issues](https://github.com/yourusername/graphrag/issues) page
+2. Create a new issue with detailed information
+3. Join our community discussions
 
-1. Ensure Neo4j is running
-2. Check the connection URI, username, and password
-3. Verify Neo4j is accessible from your network
-4. Check Neo4j logs for authentication issues
+---
 
-### Performance Issues
-
-For large vaults:
-
-1. Increase Neo4j memory settings
-2. Use SSD storage for Neo4j data
-3. Consider indexing in smaller chunks
-4. Monitor Neo4j performance metrics
-
-### Note Processing Issues
-
-If notes aren't being processed:
-
-1. Check file permissions
-2. Verify note encoding (GraphRAG auto-detects encoding)
-3. Ensure notes aren't in skipped directories
-4. Check if note format is supported
-
-### Vault Structure Issues
-
-If you have issues with your Obsidian vault:
-
-1. Verify the vault path is correct
-2. Check if the vault contains `.md` files
-3. Ensure the vault structure is valid
-4. Verify Obsidian can open the vault normally
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+**Happy knowledge graphing! 🧠✨**
