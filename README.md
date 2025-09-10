@@ -3,9 +3,9 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-GraphRAG is a powerful Python application that transforms your Obsidian vault into an intelligent knowledge graph using Neo4j's GraphRAG technology. It automatically detects entities, relationships, and concepts from your notes, enabling advanced semantic search, AI-powered querying, and knowledge discovery.
+I've put togeather a tool that transforms your Obsidian vault into an intelligent knowledge graph using Neo4j's GraphRAG. It automatically detects entities, relationships, and concepts from your notes, enabling advanced semantic search, AI-powered querying, and knowledge discovery.
 
-## 🚀 Features
+## Features
 
 - **Automatic Entity Detection**: Uses OpenAI's GPT models to identify entities, concepts, and relationships in your notes
 - **Neo4j Integration**: Leverages Neo4j's GraphRAG for powerful graph-based knowledge representation
@@ -15,7 +15,7 @@ GraphRAG is a powerful Python application that transforms your Obsidian vault in
 - **Comprehensive Entity Types**: Supports 100+ entity categories from philosophy to technology
 - **Rich Metadata Extraction**: Parses frontmatter, tags, links, and note relationships
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -31,14 +31,14 @@ GraphRAG is a powerful Python application that transforms your Obsidian vault in
                        └──────────────────┘    └─────────────────┘
 ```
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Python 3.12 or higher
 - Neo4j database (local or AuraDB cloud)
 - OpenAI API key
 - Obsidian vault
 
-## 🛠️ Installation
+## Installation
 
 1. **Clone the repository:**
    ```bash
@@ -80,7 +80,7 @@ GraphRAG is a powerful Python application that transforms your Obsidian vault in
    AURA_DATABASE=neo4j
    ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Usage
 
@@ -142,7 +142,7 @@ GraphRAG supports a comprehensive taxonomy of 100+ entity types including:
 - **Arts & Humanities** (70-89): Art, literature, music, language
 - **History & Geography** (90-98): World history, civilizations, current affairs
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -157,7 +157,7 @@ pytest --cov=src/graphrag
 pytest tests/test_core.py
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 graphrag/
@@ -177,7 +177,7 @@ graphrag/
 └── README.md               # This file
 ```
 
-## 🔍 How It Works
+## How It Works
 
 1. **Note Processing**: Scans your Obsidian vault for markdown files
 2. **Entity Detection**: Uses OpenAI to identify entities, concepts, and relationships
@@ -186,7 +186,7 @@ graphrag/
 5. **Query Processing**: Combines vector search and full-text search for optimal results
 6. **Real-time Updates**: Monitors file changes and updates the graph automatically
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
@@ -206,17 +206,17 @@ isort src/ tests/
 mypy src/
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Neo4j GraphRAG](https://github.com/neo4j/graphrag) for the underlying graph RAG technology
 - [OpenAI](https://openai.com/) for AI-powered entity detection and query processing
 - [Obsidian](https://obsidian.md/) for the excellent note-taking platform
 
-## 📞 Support
+## Support
 
 If you encounter any issues or have questions:
 
